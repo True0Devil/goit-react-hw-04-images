@@ -13,6 +13,7 @@ export const getImages = async (q, page = 1) => {
       image_type: 'photo',
       orientation: 'horizontal',
       per_page: 12,
+      headers: { 'X-Requested-With': 'XMLHttpRequest' },
     },
   });
 
