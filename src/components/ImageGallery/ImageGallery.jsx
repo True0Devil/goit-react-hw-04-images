@@ -3,11 +3,13 @@ import { Component } from 'react';
 import { ImageGalleryItem } from 'components/ImageGalleryItem/ImageGalleryItem';
 import { getImages } from 'services/pixabay.service';
 import { LoadMoreBtn } from 'components/LoadMoreBtn/LoadMoreBtn';
+import { ColorRing } from 'react-loader-spinner';
 
 export class ImageGallery extends Component {
   state = {
     images: [],
     page: 1,
+    isLoading: false,
   };
 
   async componentDidUpdate(prevProps, prevState) {
@@ -21,12 +23,15 @@ export class ImageGallery extends Component {
     }
 
     if (prevState.page < this.state.page) {
-      const newImages = await getImages(query, page);
+      this.setState({ isLoading: true });
+      try {
+        const newImages = await getImages(query, page);
 
-      console.log('изменилась страница');
-      this.setState(prevState => ({
-        images: [...prevState.images, ...newImages],
-      }));
+        console.log('изменилась страница');
+        this.setState(prevState => ({
+          images: [...prevState.images, ...newImages],
+        }));
+      } catch (error) {}
     }
   }
 
