@@ -3,7 +3,7 @@ import { Component } from 'react';
 import { ImageGalleryItem } from 'components/ImageGalleryItem/ImageGalleryItem';
 import { getImages } from 'services/pixabay.service';
 import { LoadMoreBtn } from 'components/LoadMoreBtn/LoadMoreBtn';
-import { ColorRing } from 'react-loader-spinner';
+import { IsLoading } from 'components/IsLoading/IsLoading';
 
 export class ImageGallery extends Component {
   state = {
@@ -17,9 +17,13 @@ export class ImageGallery extends Component {
     const { page } = this.state;
 
     if (prevProps.query !== this.props.query) {
-      const images = await getImages(query);
-      console.log('изменился пропс');
-      this.setState({ images, page: 1 });
+      this.setState({ isLoading: true });
+      try {
+        const images = await getImages(query);
+        console.log('изменился пропс');
+        this.setState({ images, page: 1 });
+      } catch (error) {}
+      this.setState({ isLoading: false });
     }
 
     if (prevState.page < this.state.page) {
@@ -32,23 +36,16 @@ export class ImageGallery extends Component {
           images: [...prevState.images, ...newImages],
         }));
       } catch (error) {}
+      this.setState({ isLoading: false });
     }
   }
-
-  // fetchImages = async (query, page) => {
-  //   // const { query } = this.props;
-  //   // const { page } = this.state;
-  //   const images = await getImages(query, page);
-  //   console.log(images);
-  //   return images;
-  // };
 
   incrementPage = () => {
     this.setState(prevState => ({ page: prevState.page + 1 }));
   };
 
   render() {
-    const { images } = this.state;
+    const { images, isLoading } = this.state;
     return (
       <>
         <ul className="ImageGallery">
@@ -60,6 +57,8 @@ export class ImageGallery extends Component {
             />
           ))}
         </ul>
+
+        {isLoading && <IsLoading />}
 
         {images.length > 0 && (
           <LoadMoreBtn text="Load More" onClick={this.incrementPage} />
