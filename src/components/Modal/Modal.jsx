@@ -2,10 +2,10 @@ import { Component } from 'react';
 import PropTypes from 'prop-types';
 
 export class Modal extends Component {
-    static propTypes = {
-        src: PropTypes.string.isRequired,
-        alt: PropTypes.string.isRequired,
-        onClose: PropTypes.func.isRequired,
+  static propTypes = {
+    src: PropTypes.string.isRequired,
+    alt: PropTypes.string.isRequired,
+    onClose: PropTypes.func.isRequired,
   };
 
   componentDidMount() {
@@ -17,7 +17,6 @@ export class Modal extends Component {
   }
 
   handleKeyClose = e => {
-    console.log(e.code);
     if (e.code === 'Escape') {
       this.props.onClose();
     }

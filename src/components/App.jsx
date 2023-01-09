@@ -1,27 +1,61 @@
 import { Component } from 'react';
 import { Seacrhbar } from './Searchbar/Searchbar';
 import { ImageGallery } from './ImageGallery/ImageGallery';
-
-// const name = "search"
+import { getImages } from 'services/pixabay.service';
+import { toast } from 'react-toastify';
 
 export class App extends Component {
   state = {
     search: '',
+    images: [],
+    page: 1,
+    isLoading: false,
+    isError: false,
   };
 
+  async componentDidUpdate(prevProps, prevState) {
+    const { search, page } = this.state;
+
+    if (prevState.page !== page || prevState.search !== search) {
+      this.setState({ isLoading: true });
+      try {
+        const images = await getImages(search, page);
+        if (!images.length) {
+          throw new Error(`No images were found for "${search}" request`);
+        }
+        this.setState(prevState => ({
+          images: [...prevState.images, ...images],
+          isError: false,
+        }));
+      } catch (error) {
+        toast.error(error.message);
+        this.setState({ isError: true });
+      }
+      this.setState({ isLoading: false });
+    }
+  }
+
   handleSubmit = searchQuery => {
-    console.log(searchQuery);
     const search = searchQuery.trim().toLowerCase();
 
-    this.setState({ search });
+    this.setState({ search, images: [], page: 1 });
+  };
+
+  incrementPage = () => {
+    this.setState(prevState => ({ page: prevState.page + 1 }));
   };
 
   render() {
-    const { search } = this.state;
+    const { images, isLoading, isError } = this.state;
     return (
       <>
         <Seacrhbar onSearch={this.handleSubmit} />
-        <ImageGallery query={search} />
+        <ImageGallery
+          images={images}
+          isLoading={isLoading}
+          isError={isError}
+          incrementPage={this.incrementPage}
+        />
       </>
     );
   }
