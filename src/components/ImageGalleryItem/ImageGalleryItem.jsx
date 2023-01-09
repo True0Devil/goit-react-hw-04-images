@@ -2,10 +2,10 @@
 
 // const BASE_URL = '';
 
-export const ImageGalleryItem = ({ smallImg, largeImg }) => {
+export const ImageGalleryItem = ({ smallImg, largeImg, alt }) => {
   return (
     <li className="ImageGalleryItem">
-      <img src={smallImg} alt="" className="ImageGalleryItem-image" />
+      <img src={smallImg} largeimg={largeImg} alt={alt} className="ImageGalleryItem-image" />
     </li>
   );
 };

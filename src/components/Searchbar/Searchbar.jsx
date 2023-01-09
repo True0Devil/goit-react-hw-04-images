@@ -1,4 +1,5 @@
 import { Component } from 'react';
+import { MdImageSearch } from 'react-icons/md';
 
 export class Seacrhbar extends Component {
   state = {
@@ -23,7 +24,7 @@ export class Seacrhbar extends Component {
       <header className="Searchbar">
         <form className="SearchForm" onSubmit={this.handleSubmitForm}>
           <button type="submit" className="SearchForm-button">
-            <span className="SearchForm-button-label">Search</span>
+            <MdImageSearch size="40px" />
           </button>
 
           <input
