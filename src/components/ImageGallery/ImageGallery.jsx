@@ -5,13 +5,21 @@ import { getImages } from 'services/pixabay.service';
 import { LoadMoreBtn } from 'components/LoadMoreBtn/LoadMoreBtn';
 import { IsLoading } from 'components/IsLoading/IsLoading';
 import { Modal } from 'components/Modal/Modal';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import PropTypes from 'prop-types';
 
 export class ImageGallery extends Component {
+  static propTypes = {
+    query: PropTypes.string.isRequired,
+  };
+
   state = {
     images: [],
     page: 1,
     isLoading: false,
     modalIsOpen: false,
+    isError: false,
   };
 
   currentSrc = '';
@@ -26,8 +34,15 @@ export class ImageGallery extends Component {
       try {
         const images = await getImages(query);
         console.log('изменился пропс');
-        this.setState({ images, page: 1 });
-      } catch (error) {}
+        if (!images.length) {
+          throw new Error(`No images were found for "${query}" request`);
+        }
+        this.setState({ images, page: 1, isError: false });
+      } catch (error) {
+        toast.error(error.message);
+        console.log(error);
+        this.setState({ isError: true });
+      }
       this.setState({ isLoading: false });
     }
 
@@ -40,7 +55,9 @@ export class ImageGallery extends Component {
         this.setState(prevState => ({
           images: [...prevState.images, ...newImages],
         }));
-      } catch (error) {}
+      } catch (error) {
+        toast.error('Something went wrong. Please try again');
+      }
       this.setState({ isLoading: false });
     }
   }
@@ -65,7 +82,7 @@ export class ImageGallery extends Component {
   };
 
   render() {
-    const { images, isLoading, modalIsOpen } = this.state;
+    const { images, isLoading, modalIsOpen, isError } = this.state;
     return (
       <>
         {modalIsOpen && (
@@ -91,6 +108,20 @@ export class ImageGallery extends Component {
 
         {images.length > 0 && (
           <LoadMoreBtn text="Load More" onClick={this.incrementPage} />
+        )}
+
+        {isError && (
+          <ToastContainer
+            position="top-right"
+            autoClose={5000}
+            hideProgressBar={false}
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            pauseOnHover
+            theme="colored"
+            limit={3}
+          />
         )}
       </>
     );

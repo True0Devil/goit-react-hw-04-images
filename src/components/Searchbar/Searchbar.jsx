@@ -1,7 +1,12 @@
 import { Component } from 'react';
 import { MdImageSearch } from 'react-icons/md';
+import PropTypes from 'prop-types';
 
 export class Seacrhbar extends Component {
+  static propTypes = {
+  onSearch: PropTypes.func.isRequired,
+}
+
   state = {
     search: '',
   };
