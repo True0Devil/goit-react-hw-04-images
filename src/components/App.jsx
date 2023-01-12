@@ -38,6 +38,10 @@ export class App extends Component {
   handleSubmit = searchQuery => {
     const search = searchQuery.trim().toLowerCase();
 
+    if (this.state.search === searchQuery) {
+      return;
+    }
+
     this.setState({ search, images: [], page: 1 });
   };
 
