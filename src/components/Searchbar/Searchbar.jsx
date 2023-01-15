@@ -1,49 +1,44 @@
-import { Component } from 'react';
+import { useState } from 'react';
 import { MdImageSearch } from 'react-icons/md';
 import PropTypes from 'prop-types';
 
-export class Seacrhbar extends Component {
-  static propTypes = {
-  onSearch: PropTypes.func.isRequired,
-}
+export const Searchbar = ({ onSearch }) => {
+  const [search, setSearch] = useState('');
 
-  state = {
-    search: '',
-  };
-
-  handleSubmitForm = e => {
+  const handleSubmitForm = e => {
     e.preventDefault();
 
-    this.props.onSearch(this.state.search);
-    this.setState({ search: '' });
+    onSearch(search);
+    setSearch('');
   };
 
-  handleInputChange = e => {
-    const { name, value } = e.target;
-    this.setState({ [name]: value });
+  const handleInputChange = e => {
+    const { value } = e.target;
+    setSearch(value);
   };
 
-  render() {
-    const { search } = this.state;
-    return (
-      <header className="Searchbar">
-        <form className="SearchForm" onSubmit={this.handleSubmitForm}>
-          <button type="submit" className="SearchForm-button">
-            <MdImageSearch size="40px" />
-          </button>
+  return (
+    <header className="Searchbar">
+      <form className="SearchForm" onSubmit={handleSubmitForm}>
+        <button type="submit" className="SearchForm-button">
+          <MdImageSearch size="35px" />
+        </button>
 
-          <input
-            value={search}
-            className="SearchForm-input"
-            type="text"
-            autoComplete="off"
-            autoFocus
-            placeholder="Search images and photos"
-            name="search"
-            onChange={this.handleInputChange}
-          />
-        </form>
-      </header>
-    );
-  }
+        <input
+          value={search}
+          className="SearchForm-input"
+          type="text"
+          autoComplete="off"
+          autoFocus
+          placeholder="Search images and photos"
+          name="search"
+          onChange={handleInputChange}
+        />
+      </form>
+    </header>
+  );
+};
+
+Searchbar.propTypes = {
+  onSearch: PropTypes.func.isRequired,
 }

@@ -1,87 +1,80 @@
-import { Component } from 'react';
-
 import { ImageGalleryItem } from 'components/ImageGalleryItem/ImageGalleryItem';
 import { LoadMoreBtn } from 'components/LoadMoreBtn/LoadMoreBtn';
 import { IsLoading } from 'components/IsLoading/IsLoading';
 import { Modal } from 'components/Modal/Modal';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { useState } from 'react';
+import { useRef } from 'react';
 import PropTypes from 'prop-types';
 
-export class ImageGallery extends Component {
-  static propTypes = {
-    images: PropTypes.array.isRequired,
-    isLoading: PropTypes.bool.isRequired,
-    isError: PropTypes.bool.isRequired,
-    incrementPage: PropTypes.func.isRequired,
-  };
+export const ImageGallery = ({ images, status, incrementPage }) => {
+  const [modalIsOpen, setModalOpen] = useState(false);
 
-  state = {
-    modalIsOpen: false,
-  };
+  const currentSrcRef = useRef();
+  const currentAltRef = useRef();
 
-  currentSrc = '';
-  currentAlt = '';
-
-  handleImgClick = e => {
+  const handleImgClick = e => {
     const { target } = e;
 
     if (target.nodeName === 'IMG') {
-      this.currentSrc = target.getAttribute('largeimg');
-      this.currentAlt = target.getAttribute('alt');
+      currentSrcRef.current = target.getAttribute('largeimg');
+      currentAltRef.current = target.getAttribute('alt');
 
-      this.setState({ modalIsOpen: true });
+      setModalOpen(true);
     }
   };
 
-  handleModalClose = () => {
-    this.setState({ modalIsOpen: false });
+  const handleModalClose = () => {
+    setModalOpen(false);
   };
 
-  render() {
-    const { modalIsOpen } = this.state;
-    const { images, isLoading, isError, incrementPage } = this.props;
-    return (
-      <>
-        {modalIsOpen && (
-          <Modal
-            src={this.currentSrc}
-            alt={this.currentAlt}
-            onClose={this.handleModalClose}
+  return (
+    <>
+      {modalIsOpen && (
+        <Modal
+          src={currentSrcRef.current}
+          alt={currentAltRef.current}
+          onClose={handleModalClose}
+        />
+      )}
+
+      {status === 'rejected' && (
+        <ToastContainer
+          position="top-right"
+          autoClose={5000}
+          hideProgressBar={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          pauseOnHover
+          theme="colored"
+          limit={3}
+        />
+      )}
+
+      <ul className="ImageGallery" onClick={handleImgClick}>
+        {images.map(img => (
+          <ImageGalleryItem
+            key={img.id}
+            smallImg={img.webformatURL}
+            largeImg={img.largeImageURL}
+            alt={img.tags}
           />
-        )}
+        ))}
+      </ul>
 
-        <ul className="ImageGallery" onClick={this.handleImgClick}>
-          {images.map(img => (
-            <ImageGalleryItem
-              key={img.id}
-              smallImg={img.webformatURL}
-              largeImg={img.largeImageURL}
-              alt={img.tags}
-            />
-          ))}
-        </ul>
+      {status === 'pending' && <IsLoading />}
 
-        {isLoading && <IsLoading />}
+      {images.length > 0 && (
+        <LoadMoreBtn text="Load More" onClick={incrementPage} />
+      )}
+    </>
+  );
+};
 
-        {images.length > 0 && (
-          <LoadMoreBtn text="Load More" onClick={incrementPage} />
-        )}
-
-        {isError && (
-          <ToastContainer
-            position="top-right"
-            autoClose={5000}
-            hideProgressBar={false}
-            closeOnClick
-            rtl={false}
-            pauseOnFocusLoss
-            pauseOnHover
-            theme="colored"
-            limit={3}
-          />
-        )}
-      </>
-    );
-  }
-}
+ImageGallery.propTypes = {
+  images: PropTypes.arrayOf(PropTypes.object).isRequired,
+  status: PropTypes.string.isRequired,
+  incrementPage: PropTypes.func.isRequired,
+};

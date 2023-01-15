@@ -1,66 +1,72 @@
-import { Component } from 'react';
-import { Seacrhbar } from './Searchbar/Searchbar';
+import { Searchbar } from './Searchbar/Searchbar';
 import { ImageGallery } from './ImageGallery/ImageGallery';
 import { getImages } from 'services/pixabay.service';
+import { reducerSetState } from 'functions/reducerSetState';
 import { toast } from 'react-toastify';
+import { useReducer } from 'react';
+import { useEffect } from 'react';
 
-export class App extends Component {
-  state = {
+// idle, pending, rejected, fullfilled
+const status = {
+  IDLE: 'idle',
+  PENDING: 'pending',
+  REJECTED: 'rejected',
+  FULFILLED: 'fulfilled',
+};
+
+export const App = () => {
+  const [state, dispatch] = useReducer(reducerSetState, {
     search: '',
-    images: [],
+    images: null,
     page: 1,
-    isLoading: false,
-    isError: false,
-  };
+    status: status.IDLE,
+  });
 
-  async componentDidUpdate(prevProps, prevState) {
-    const { search, page } = this.state;
-
-    if (prevState.page !== page || prevState.search !== search) {
-      this.setState({ isLoading: true });
-      try {
-        const images = await getImages(search, page);
-        if (!images.length) {
-          throw new Error(`No images were found for "${search}" request`);
-        }
-        this.setState(prevState => ({
-          images: [...prevState.images, ...images],
-          isError: false,
-        }));
-      } catch (error) {
-        toast.error(error.message);
-        this.setState({ isError: true });
-      }
-      this.setState({ isLoading: false });
-    }
-  }
-
-  handleSubmit = searchQuery => {
-    const search = searchQuery.trim().toLowerCase();
-
-    if (this.state.search === searchQuery) {
+  useEffect(() => {
+    if (!state.search) {
       return;
     }
 
-    this.setState({ search, images: [], page: 1 });
+    dispatch({ type: 'loading', payload: status.PENDING });
+
+    getImages(state.search, state.page)
+      .then(images => {
+        if (!images.length) {
+          throw new Error(`No images were found for "${state.search}" request`);
+        }
+        return images;
+      })
+      .then(images => dispatch({ type: 'success', payload: images }))
+      .catch(error => {
+        toast.error(error.message);
+        dispatch({ type: 'error', payload: status.REJECTED });
+      });
+  }, [state.search, state.page]);
+
+  const handleSubmit = searchQuery => {
+    const search = searchQuery.trim().toLowerCase();
+
+    if (state.search === searchQuery) {
+      return;
+    }
+
+    dispatch({ type: 'submit', payload: search });
   };
 
-  incrementPage = () => {
-    this.setState(prevState => ({ page: prevState.page + 1 }));
+  const incrementPage = () => {
+    dispatch({ type: 'incrementPage', payload: 1 });
   };
 
-  render() {
-    const { images, isLoading, isError } = this.state;
-    return (
-      <>
-        <Seacrhbar onSearch={this.handleSubmit} />
+  return (
+    <>
+      <Searchbar onSearch={handleSubmit} />
+      {state.search && (
         <ImageGallery
-          images={images}
-          isLoading={isLoading}
-          isError={isError}
-          incrementPage={this.incrementPage}
+          images={state.images}
+          status={state.status}
+          incrementPage={incrementPage}
         />
-      </>
-    );
-  }
-}
+      )}
+    </>
+  );
+};

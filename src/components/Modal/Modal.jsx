@@ -1,41 +1,36 @@
-import { Component } from 'react';
 import PropTypes from 'prop-types';
+import { useEffect } from 'react';
 
-export class Modal extends Component {
-  static propTypes = {
-    src: PropTypes.string.isRequired,
-    alt: PropTypes.string.isRequired,
-    onClose: PropTypes.func.isRequired,
-  };
+export const Modal = ({ src, alt, onClose }) => {
+  useEffect(() => {
+    const handleKeyClose = e => {
+      if (e.code === 'Escape') {
+        onClose();
+      }
+    };
 
-  componentDidMount() {
-    window.addEventListener('keydown', this.handleKeyClose);
-  }
+    window.addEventListener('keydown', handleKeyClose);
 
-  componentWillUnmount() {
-    window.removeEventListener('keydown', this.handleKeyClose);
-  }
+    return () => window.removeEventListener('keydown', handleKeyClose);
+  }, [onClose]);
 
-  handleKeyClose = e => {
-    if (e.code === 'Escape') {
-      this.props.onClose();
-    }
-  };
-
-  handleCloseOnBacdropClick = e => {
+  const handleCloseOnBacdropClick = e => {
     if (e.target === e.currentTarget) {
-      this.props.onClose();
+      onClose();
     }
   };
 
-  render() {
-    const { src, alt } = this.props;
-    return (
-      <div className="Overlay" onClick={this.handleCloseOnBacdropClick}>
-        <div className="Modal">
-          <img src={src} alt={alt} />
-        </div>
+  return (
+    <div className="Overlay" onClick={handleCloseOnBacdropClick}>
+      <div className="Modal">
+        <img src={src} alt={alt} />
       </div>
-    );
-  }
-}
+    </div>
+  );
+};
+
+Modal.propTypes = {
+  src: PropTypes.string.isRequired,
+  alt: PropTypes.string.isRequired,
+  onClose: PropTypes.func.isRequired,
+};
